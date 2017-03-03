@@ -34,7 +34,7 @@ $(document).ready(function() {
 				ebolaDrag = false;
 				// console.log(e.latlng); // e is an event object (MouseEvent in this case)
 				addChat(mymap);
-				addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000);
+				addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000000);
 			}
 
 		});
@@ -75,14 +75,17 @@ $(document).ready(function() {
 				var lng = people[i].geometry.coordinates[0];
                 var phoneIcon;
                 if (people[i].doc.properties.property_values["is real"]) {
+                    console.log(lat, lng)
                     phoneIcon = L.icon({
                         iconUrl: 'marker-icon-ourphone.png',
-                        iconSize: [25,41]
+                        iconSize: [25,41],
+                        iconAnchor: [12.5, 41]
                     })
                 } else {
                     phoneIcon = L.icon({
                         iconUrl: 'marker-icon-phone.png',
-                        iconSize: [25,41]
+                        iconSize: [25,41],
+                        iconAnchor: [12.5, 41]
                     })
                 }
                 
@@ -125,11 +128,12 @@ $(document).ready(function() {
 			//Add marker at center of circle with ebola icon
 			var ebolaIcon = L.icon({
 			    iconUrl: 'https://raw.githubusercontent.com/ce-store/crisishack/master/src/main/webapp/icons/crisis_ebola.png',
-			    iconAnchor: new L.Point(16, 18),
-			    iconSize: new L.Point(32, 37),
+			    iconAnchor: [16,37],
+			    iconSize: [32,37],
 			});
 
 			var center = L.marker([latitude, longitude], {icon: ebolaIcon});
+            center.setZIndexOffset(999999);
 			center.addTo(group);
 
 			var circle = L.circle([latitude, longitude], {
