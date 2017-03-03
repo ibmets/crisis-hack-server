@@ -32,7 +32,7 @@ $(document).ready(function() {
 			ebolaDrag = false;
 			// console.log(e.latlng); // e is an event object (MouseEvent in this case)
 			addChat(mymap);
-			addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000);
+			addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000000);
 		}
 
 	});
@@ -56,6 +56,7 @@ $(document).ready(function() {
 	});
 
 	setupWebPageDragDrop();
+	var currentCircleNumbers = [];
 
 	function addPeopleToMap(latitude, longitude, radius) {
 		group.clearLayers();
@@ -66,8 +67,44 @@ $(document).ready(function() {
 				var lng = people[i].geometry.coordinates[0];
 
 				L.marker([lat,lng]).addTo(group);
+				if (people[i].doc.properties.property_values["is real"]) {
+					console.log(people[i]);
+					currentCircleNumbers.push({
+						name: people[i].doc.properties.name,
+						telephone_number: people[i].doc.properties.property_values["telephone number"][0]
+					})
+				}
+
 
 			}
+
+
+			console.log(currentCircleNumbers);
+
+			$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/queries/conversation%20including%20person/execute?style=normalised', function(response) {
+				console.log(response.results);
+				var ceresults = response.results;
+				var conversations = [];
+				var testPeople = ['person.1', 'person.2', 'person.3', 'person.4'];
+				for (x in ceresults) {
+					var ceresult = ceresults[x];
+
+					for (y in testPeople) {
+						var currentCircleNumber = testPeople[y];
+						if (ceresult[0] === currentCircleNumber) {
+							conversations.push({id: ceresult[1], number: '0123456789'});
+						}
+					}
+				}
+
+				for (c in conversations) {
+					var conv = conversations[c];
+					chatFunctions.getConversationFromCE(conv.id.replace('.', '_'));
+				}
+			})
+
+
+
 			var circle = L.circle([latitude, longitude], {
 			    color: 'red',
 			    fillColor: '#f03',
@@ -153,7 +190,9 @@ $(document).ready(function() {
         this.message_side = arg.message_side;
         this.conversation = arg.conversation;
         this.timestamp = arg.timestamp;
-        this.text += ' (at ' + chatFunctions.convertTimestamp(arg.timestamp) + ')'
+        this.text += ' (at ' + chatFunctions.convertTimestamp(arg.timestamp) + ')';
+        this.targetNumber = arg.targetNumber ? null : arg.targetNumber;
+
         this.draw = function (_this) {
             return function () {
                 var $message;
@@ -161,6 +200,17 @@ $(document).ready(function() {
                 $message.addClass(_this.message_side).find('.text').html(_this.text);
                 var selector = '#' + this.conversation + ' .messages';
                 $(selector).append($message);
+
+                if (this.targetNumber) {
+                	// send message to number
+                	//send request to server to actually send the message.
+                	//sendMessage
+                	console.log(this.targetNumber);
+                	$.get('/sendMessage?to="'+this.targetNumber+'"&body='+message.text, function(result) {
+                		console.log(result);
+                	})
+                }
+
                 return setTimeout(function () {
                     return $message.addClass('appeared');
                 }, 0);
@@ -229,13 +279,25 @@ $(document).ready(function() {
             message_side = 'right';
             $conversation = $('.conversation.active');
             var convoId = $conversation.attr('id');
+
+            var currentCircleNumbersLength = currentCircleNumbers.length;
+            var convoNumber = convoId.split("person_")[1].split("-SafariCom")[0];
+
             message = new Message({
                 text: text,
                 message_side: message_side,
                 conversation: convoId,
                 timestamp: Math.floor(Date.now() / 1000)
             });
+            if (convoNumber <= currentCircleNumbersLength) {
+            	console.log('hi');
+            	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
+            }
             message.draw();
+
+
+
+
             return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
         },
         getMessageFromCE: function(name, conversation, expected, messageObjects) {
@@ -384,8 +446,4 @@ $(document).ready(function() {
         },
 
     }
-
-
-		chatFunctions.getConversationFromCE('person_1-SafariCom');
-
 });
