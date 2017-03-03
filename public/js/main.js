@@ -48,27 +48,46 @@ $(document).ready(function() {
 		e.preventDefault();
 		hideChat(mymap, group);
 	})
-	$('.send_message').click(function (e) {
-			var msg = chatFunctions.getMessageText();
-			console.log(msg);
-	    return chatFunctions.sendToAll(msg);
-	});
-	$('.message_input').keyup(function (e) {
-	    if (e.which === 13) {
+	// $('.send_message').click(function (e) {
+	// 		var msg = chatFunctions.getMessageText();
+	// 		console.log(msg);
+	//     return chatFunctions.sendToAll(msg);
+	// });
+	// $('.message_input').keyup(function (e) {
+	//     if (e.which === 13) {
+ //            var id = $(".conversation.active").attr('id');
+	//         return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
+	//     }
+	// });
+    var currentCircleNumbers = [];
+
+    $('.send_message').click(function (e) {
+        var id = $(".conversation.active").attr('id');
+        return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
+    });
+    $('.message_input').keyup(function (e) {
+        if (e.which === 13) {
             var id = $(".conversation.active").attr('id');
-	        return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
-	    }
-	});
-	/*
-	$('input')[0].addEventListener('keydown', function(e) {
-			if (e.keyCode == 13) {
-					chatFunctions.getConversationFromCE($('input')[0].value.replace('.', '_'));
-			}
-	});
-	*/
+            return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
+        }
+    });
+    var $sendToAll = $('.tabs').append($($('.tab_template').clone().html()));
+    setTimeout(function () {
+            $sendToAll.addClass('send-to-all');
+            $sendToAll[0].addEventListener('click', function() {
+                    chatFunctions.turnOffActiveConvo();
+            });
+            
+    }, 0);
+    $('.send-to-all').keyup(function (e) {
+        if (e.which === 13) {
+            return chatFunctions.sendToAll(chatFunctions.getMessageText());
+        }
+    });
+	
 
 	setupWebPageDragDrop();
-	var currentCircleNumbers = [];
+	
 
 	function addPeopleToMap(latitude, longitude, radius) {
 		group.clearLayers();
