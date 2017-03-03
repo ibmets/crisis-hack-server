@@ -386,6 +386,6 @@ $(document).ready(function() {
     }
 
 
-		chatFunctions.getConversationFromCE('person_100-SafariCom');
+		chatFunctions.getConversationFromCE('person_1-SafariCom');
 
 });
