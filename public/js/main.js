@@ -41,6 +41,14 @@ $(document).ready(function() {
 		e.preventDefault();
 		hideChat(mymap, group);
 	})
+	$('.send_message').click(function (e) {
+	    return chatFunctions.sendMessage(chatFunctions.getMessageText());
+	});
+	$('.message_input').keyup(function (e) {
+	    if (e.which === 13) {
+	        return chatFunctions.sendMessage(chatFunctions.getMessageText());
+	    }
+	});
 
 	setupWebPageDragDrop();
 
@@ -102,14 +110,25 @@ $(document).ready(function() {
         evt.stopPropagation();
         evt.preventDefault();
         var files = evt.dataTransfer; // FileList object.
-        console.log(files) ;
-        console.log(files.getData("application/x-moz-file"));
-        console.log(files.getData("Files"));
-        console.log(files.getData("text/x-moz-url"));
-        console.log(files.getData("text/uri-list"));
-        console.log(files.getData("text/plain"));
-        console.log(files.getData("text/html"));
-        console.log(evt);
+
+        var url = files.getData("text/plain");
+        if (url && url.length > 0) {
+        	$.get(url, function(result) {
+        		try {
+        			var geoJSON = JSON.parse(result);
+        			for (var i=0; i<geoJSON.length; i++) {
+        				//add marker to map
+        				var lat = geoJSON[i].geometry.coordinates[1];
+        				var lng = geoJSON[i].geometry.coordinates[0];
+        				L.marker([lat,lng]).addTo(group);
+        			}
+        			
+        			mymap.fitBounds(group.getBounds());
+        		} catch(err) {
+        			console.log(err);
+        		}
+        	});
+        }
     }
 
     function handleDragOver(evt) {
@@ -118,6 +137,83 @@ $(document).ready(function() {
         evt.preventDefault();
         evt.dataTransfer.dropEffect = 'link';
         evt.dataTransfer.effectAllowed = 'link'; // Explicitly show this is a copy.
+    }
+
+    var getMessageText, message_side, sendMessage;
+    message_side = 'right';
+
+    var Message;
+    Message = function (arg) {
+        this.text = arg.text, this.message_side = arg.message_side;
+        this.draw = function (_this) {
+            return function () {
+                var $message;
+                $message = $($('.message_template').clone().html());
+                $message.addClass(_this.message_side).find('.text').html(_this.text);
+                $('.messages').append($message);
+                return setTimeout(function () {
+                    return $message.addClass('appeared');
+                }, 0);
+            };
+        }(this);
+        return this;
+    };
+    
+    var chatFunctions = {
+
+    	getMessageText: function () {
+    	    var $message_input;
+    	    // TODO Separate this out into two message types
+    	    $message_input = $('.message_input');
+    	    return $message_input.val();
+    	},
+    	sendMessage: function (text) {
+    	    var $messages, message;
+    	    if (text.trim() === '') {
+    	        return;
+    	    }
+    	    $('.message_input').val('');
+    	    $messages = $('.messages');
+    	    message_side = 'right';
+    	    message = new Message({
+    	        text: text,
+    	        message_side: message_side
+    	    });
+    	    message.draw();
+    	    return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
+    	},
+    	getMessageFromCE: function(index) {
+    	    var $messages;
+    	    var p = new Promise(function(resolve, reject) {
+    	      var req = new XMLHttpRequest();
+    	      req.open('GET', 'http://ce-crisishack.eu-gb.mybluemix.net/ce-store/concepts/message/instances?style=normalised');
+    	      req.onload = function() {
+    	        if (req.status == 200) {
+    	          resolve(req.response);
+    	        }
+    	        else {
+    	          reject(Error(req.statusText));
+    	        }
+    	      };
+    	      req.onerror = function() {
+    	        reject(Error("Network Error"));
+    	      };
+    	      req.send();
+    	    });
+
+    	    p.then(function(response) {
+    	        var parsedResponse = JSON.parse(response)[index];
+    	        $messages = $('.messages');
+    	        message_side = parsedResponse['is to'] === 'SafariCom' ? 'left' : 'right';
+    	        message = new Message({
+    	            text: parsedResponse['message text'],
+    	            message_side: message_side
+    	        });
+    	        message.draw();
+    	        $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
+    	    });
+    	    return;
+    	}
     }
 
 });
