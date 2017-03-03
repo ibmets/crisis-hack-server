@@ -7,7 +7,7 @@ var Promise = require('promise');
 var needle = require('needle');
 //var bodyParser = require('body-parser');
 
-var twilioFunctions = require('./api/twilio.js');
+var twilioFunctions = require('./twilio.js');
 
 // HTTP GET - Return all tweets
 router.get('/', function(req, res, next) {
