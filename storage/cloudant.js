@@ -1,6 +1,6 @@
 var Cloudant = require('cloudant'),
 	vcapServices = require('vcap_services'),
-	credentials = vcapServices.getCredentials('cloudantNoSQLDB'),	
+	credentials = vcapServices.getCredentials('cloudantNoSQLDB'),
 	cloudant = Cloudant({url: credentials.url}),
   	db;
 
@@ -12,7 +12,7 @@ var insertDocument = function(doc) {
 	return new Promise(function(resolve, reject){
 		db.insert(doc, function(err, data){
 			(err) ? reject(err) : resolve(data);
-		});	
+		});
 	});
 }
 
@@ -20,7 +20,7 @@ var insertBulk = function(docs) {
 	return new Promise(function(resolve, reject){
 		db.bulk({docs: docs}, function(err, data){
 			(err) ? reject(err) : resolve(data);
-		});	
+		});
 	});
 }
 
@@ -36,7 +36,7 @@ var getByQuery = function(query) {
 	return new Promise(function(resolve,reject){
 		db.find({selector: query}, function(err, data) {
 			(err) ? reject(err) : resolve(data);
-		});	
+		});
 	});
 }
 
@@ -66,7 +66,7 @@ var deleteDocument = function(id, rev) {
 
 var updateDocument = function(id, doc) {
 	return new Promise(function(resolve, reject) {
-		if (!doc.hasOwnProperty('_rev')) { 
+		if (!doc.hasOwnProperty('_rev')) {
 			reject({err: 'No rev parameter specified!'});
 		} else {
 			db.insert(doc, function(err, data) {
