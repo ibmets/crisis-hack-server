@@ -79,9 +79,9 @@
                 return sendMessage(getMessageText());
             }
         });
-        getMessageFromCE(0);
-        setTimeout(function () {
-            return getMessageFromCE(1);
-        }, 1000);
+        // getMessageFromCE(0);
+        // setTimeout(function () {
+        //     return getMessageFromCE(1);
+        // }, 1000);
     });
 }.call(this));
