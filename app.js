@@ -22,8 +22,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 var routes = require('./routes/index');
+var geo = require('./routes/geo');
 
 app.use('/', routes);
+app.use('/geo', geo);
 
 var appEnv = cfenv.getAppEnv();
 server.listen(appEnv.port, '0.0.0.0', function() {
