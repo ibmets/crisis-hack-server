@@ -89,7 +89,6 @@ router.get('/peopleNearLocation/:latitude/:longitude/:radius', function(req, res
 				parameters.bookmark = bookmark;
 			}
 			
-
 			model.initialise("demo_people_locations");
 			// console.log(parameters);
 			model.geo("demo_people_locations", "people", parameters).then(function(result) {
@@ -116,6 +115,5 @@ router.get('/peopleNearLocation/:latitude/:longitude/:radius', function(req, res
 		}
 	})
 })
-
 
 module.exports = router;
