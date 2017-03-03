@@ -49,11 +49,13 @@ $(document).ready(function() {
 	        return chatFunctions.sendMessage(chatFunctions.getMessageText());
 	    }
 	});
+	/*
 	$('input')[0].addEventListener('keydown', function(e) {
 			if (e.keyCode == 13) {
 					chatFunctions.getConversationFromCE($('input')[0].value.replace('.', '_'));
 			}
 	});
+	*/
 
 	setupWebPageDragDrop();
 	var currentCircleNumbers = [];
@@ -228,8 +230,8 @@ $(document).ready(function() {
                 $conversation = $($('.conversation_template').clone().html());
                 $('.conversations').append($conversation);
                 return setTimeout(function () {
-                    $conversation.addClass('active');
                     $conversation.attr('id', _this.id);
+										chatFunctions.selectConversation(_this.id);
                     return;
                 }, 0);
             };
@@ -246,13 +248,9 @@ $(document).ready(function() {
                 $('.tabs').append($tab);
                 return setTimeout(function () {
                     $tab.addClass(_this.conversation);
-                    $tab.addClass('active');
+                    //$tab.addClass('active');
                     $tab[0].addEventListener('click', function() {
                         chatFunctions.selectConversation(_this.conversation);
-                        //var $conversation = $('#' + _this.conversation);
-                        //turnOffActiveConvo();
-                        //$conversation.addClass('active');
-                        //$tab.addClass('active');
                     });
                     return;
                 }, 0);
@@ -294,10 +292,6 @@ $(document).ready(function() {
             	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
             }
             message.draw();
-
-
-
-
             return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
         },
         getMessageFromCE: function(name, conversation, expected, messageObjects) {
@@ -402,10 +396,10 @@ $(document).ready(function() {
                             messages: messages,
                             id: id
                         });
-                        chatFunctions.turnOffActiveConvo();
                         tab = new Tab({conversation: id});
                         tab.draw();
                         conversation.draw();
+												chatFunctions.selectConversation(conversation.id);
                         var messages = conversation.messages;
                         var expectedNumber = messages.length;
                         var messageObjects = [];
