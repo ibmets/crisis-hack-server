@@ -47,7 +47,9 @@ $(document).ready(function() {
 		hideChat(mymap, group);
 	})
 	$('.send_message').click(function (e) {
-	    return chatFunctions.sendToAll(chatFunctions.getMessageText());
+			var msg = chatFunctions.getMessageText();
+			console.log(msg);
+	    return chatFunctions.sendToAll(msg);
 	});
 	$('.message_input').keyup(function (e) {
 	    if (e.which === 13) {
@@ -219,7 +221,7 @@ $(document).ready(function() {
         this.conversation = arg.conversation;
         this.timestamp = arg.timestamp;
         this.text += ' (at ' + chatFunctions.convertTimestamp(arg.timestamp) + ')';
-        this.targetNumber = arg.targetNumber ? null : arg.targetNumber;
+        this.targetNumber = arg.targetNumber ? arg.targetNumber : null;
 
         this.draw = function (_this) {
             return function () {
@@ -228,13 +230,12 @@ $(document).ready(function() {
                 $message.addClass(_this.message_side).find('.text').html(_this.text);
                 var selector = '#' + this.conversation + ' .messages';
                 $(selector).append($message);
-
+								console.log('message.draw: ' + this.targetNumber);
                 if (this.targetNumber) {
                 	// send message to number
                 	//send request to server to actually send the message.
                 	//sendMessage
-                	console.log(this.targetNumber);
-                	$.get('/sendMessage?to="'+this.targetNumber+'"&body='+message.text, function(result) {
+                	$.get('/sendMessage?to="'+this.targetNumber+'"&body='+_this.text, function(result) {
                 		console.log(result);
                 	})
                 }
@@ -263,8 +264,8 @@ $(document).ready(function() {
                 return setTimeout(function () {
                     $conversation.attr('id', _this.id);
                     $conversation.attr('rel', JSON.stringify({lat: _this.lat, lon: _this.lon, phone: _this.phone, name: _this.name}));
-					$('#' + _this.id + ' .name').html(_this.name);
-					chatFunctions.selectConversation(_this.id);
+										$('#' + _this.id + ' .name').html(_this.name);
+										chatFunctions.selectConversation(_this.id);
                     return;
                 }, 0);
             };
@@ -299,7 +300,7 @@ $(document).ready(function() {
             $message_input = $('.message_input');
             return $message_input.val();
         },
-        sendMessage: function (text, phone) {
+        sendMessage: function (text, id) {
             var $messages, message;
             if (text.trim() === '') {
                 return;
@@ -307,16 +308,16 @@ $(document).ready(function() {
             $('.message_input').val('');
             $messages = $('.messages');
             message_side = 'right';
-            $conversation = $('.conversation.active');
+            $conversation = $('#' + id);
             var convoId = $conversation.attr('id');
 
-            var currentCircleNumbersLength = currentCircleNumbers.length;
-            var convoNumber = convoId.split("person_")[1].split("-SafariCom")[0];
+            //var currentCircleNumbersLength = currentCircleNumbers.length;
+            //var convoNumber = id.split("person_")[1].split("-SafariCom")[0];
 
             message = new Message({
                 text: text,
                 message_side: message_side,
-                conversation: convoId,
+                conversation: id,
                 timestamp: Math.floor(Date.now() / 1000)
             });
             /*
@@ -324,8 +325,9 @@ $(document).ready(function() {
             	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
             }
             */
-            if (phone) {
-                message.targetNumber = phone;
+						console.log('sendmessage: ' + JSON.parse($conversation.attr('rel')).phone);
+            if (JSON.parse($conversation.attr('rel')).phone) {
+                message.targetNumber = JSON.parse($conversation.attr('rel')).phone;
             }
             message.draw();
             return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
@@ -371,6 +373,10 @@ $(document).ready(function() {
                     conversation: conversation,
                     timestamp: parsedResponse['timestamp']
                 });
+								var phone = JSON.parse($('#' + conversation).attr('rel')).phone;
+								if (phone) {
+									message.phone = phone;
+								}
                 messageObjects.push(message);
                 if (messageObjects.length === expected) {
                     messageObjects.sort(function(x, y){
@@ -433,23 +439,24 @@ $(document).ready(function() {
                         for (i in parsedResponse.includes) {
                             if (parsedResponse.includes[i] !== 'SafariCom') {
                                 name = parsedResponse.includes[i];
-                                phoneNumber = '07956749536';
+																
                             }
                         }
                         conversation = new Conversation({
                             messages: messages,
                             id: id,
-							name: name,
+														name: name,
                             lat: parsedResponse['latitude'],
                             lon: parsedResponse['longitude']
                         });
+												console.log('getConversation: ' + phoneNumber);
                         if (phoneNumber) {
                             conversation.phone = phoneNumber;
                         }
                         tab = new Tab({conversation: id});
                         tab.draw();
                         conversation.draw();
-						chatFunctions.selectConversation(conversation.id);
+												chatFunctions.selectConversation(conversation.id);
                         var messages = conversation.messages;
                         var expectedNumber = messages.length;
                         var messageObjects = [];
@@ -498,8 +505,8 @@ $(document).ready(function() {
         },
         sendToAll: function(text) {
             for (i = 1; i < 5; i++) {
-                var selector = '#person_' + i + '-SafariCom';
-                console.log(JSON.parse($(selector).attr('rel')).lat);
+                var id = 'person_' + i + '-SafariCom';
+                chatFunctions.sendMessage(text, id);
             }
         }
 
