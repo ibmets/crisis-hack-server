@@ -50,4 +50,5 @@ jspm_packages
 .env
 
 # Local mac variables
+public/.DS_Store
 .DS_Store

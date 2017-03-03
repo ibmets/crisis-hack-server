@@ -70,12 +70,27 @@ $(document).ready(function() {
 	function addPeopleToMap(latitude, longitude, radius) {
 		group.clearLayers();
 		$.get('/geo/peopleNearLocation/'+latitude+'/'+longitude+'/'+radius, function(people) {
-			for (var i=0; i<people.length; i++) {
+			
+            for (var i=0; i<people.length; i++) {
 				//add marker to map
 				var lat = people[i].geometry.coordinates[1];
 				var lng = people[i].geometry.coordinates[0];
+                var phoneIcon;
+                if (people[i].doc.properties.property_values["is real"]) {
+                    phoneIcon = L.icon({
+                        iconUrl: 'marker-icon-ourphone.png',
+                        iconSize: [25,41]
+                    })
+                } else {
+                    phoneIcon = L.icon({
+                        iconUrl: 'marker-icon-phone.png',
+                        iconSize: [25,41]
+                    })
+                }
+                
+                
 
-				L.marker([lat,lng]).addTo(group);
+				L.marker([lat,lng], {icon: phoneIcon}).addTo(group);
 				if (people[i].doc.properties.property_values["is real"]) {
 					currentCircleNumbers.push({
 						name: people[i].doc.properties.name,
@@ -85,9 +100,6 @@ $(document).ready(function() {
 
 
 			}
-
-
-			//console.log(currentCircleNumbers);
 
 			$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/queries/conversation%20including%20person/execute?style=normalised', function(response) {
 
