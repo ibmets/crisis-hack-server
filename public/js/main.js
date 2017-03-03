@@ -176,16 +176,20 @@ $(document).ready(function() {
         var files = evt.dataTransfer; // FileList object.
 
         var url = files.getData("text/plain");
+        console.log(url)
         if (url && url.length > 0) {
-        	$.get(url, function(result) {
-        		// console.log(result);
+        	$.post("/corsproxy",{url: url}, function(geoJSON) {
+        		console.log(geoJSON);
         		try {
-        			var geoJSON = JSON.parse(result);
-        			console.log(geoJSON);
-        			for (var i=0; i<geoJSON.features.length; i++) {
+        			// var geoJSON = JSON.parse(result);
+        			
+        			var data = geoJSON.features.slice(0,10);
+        			console.log(data);
+        			delete geoJSON.features;
+        			for (var i=0; i<data.length; i++) {
         				//add marker to map
-        				var lat = geoJSON.features[i].geometry.coordinates[1];
-        				var lng = geoJSON.features[i].geometry.coordinates[0];
+        				var lat = data[i].geometry.coordinates[1];
+        				var lng = data[i].geometry.coordinates[0];
         				L.marker([lat,lng]).addTo(group);
         			}
 
