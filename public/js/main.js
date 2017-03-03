@@ -88,11 +88,7 @@ $(document).ready(function() {
 			//console.log(currentCircleNumbers);
 
 			$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/queries/conversation%20including%20person/execute?style=normalised', function(response) {
-<<<<<<< HEAD
-				//console.log(response.results);
-=======
-				// console.log(response.results);
->>>>>>> 9391a17ee33e9cd9111fc09bf4d2ed8cf38ff3f2
+
 				var ceresults = response.results;
 				var conversations = [];
 				var testPeople = ['person.1', 'person.2', 'person.3', 'person.4'];
