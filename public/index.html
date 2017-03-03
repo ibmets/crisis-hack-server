@@ -6,6 +6,8 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="HandheldFriendly" content="true">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
   <link rel="stylesheet" href="stylesheets/style.css">
   <link rel="stylesheet" href="stylesheets/chat.css">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -14,38 +16,51 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
   <script src="dist/leaflet-heat.js"></script>
-	<script type="text/javascript" src="js/chat.js"></script>
-
   <script type="text/javascript" src="js/main.js"></script>
 </head>
 <body>
 
+  <div class="back-nav">
+    <p id="back-button">Back</p>
+  </div>
+  <div class="row">
+    <div class="col-sm-4 nopad" id="chat_container">
 
- <div class="chat_window">
-	 <div class="top_menu">
-		 <!--div class="buttons">
-			 <div class="button close"></div>
-			 <div class="button minimize"></div>
-			 <div class="button maximize"></div>
-		 </div-->
-		 <div>
-			 <input/>
-		 </div>
-		 <div class="tabs">
-		 </div>
-	 </div>
-	 <div class="conversations"></div>
-	 <div class="bottom_wrapper clearfix">
-		 <div class="message_input_wrapper">
-			 <input class="message_input" placeholder="Type your message here..." />
-		 </div>
-		 <div class="send_message">
-			 <div class="icon"></div>
-			 <div class="text">Send</div>
-		 </div>
-	 </div>
- </div>
+      <div class="chat_window">
+     	 <div class="top_menu">
+     		 <!--div class="buttons">
+     			 <div class="button close"></div>
+     			 <div class="button minimize"></div>
+     			 <div class="button maximize"></div>
+     		 </div-->
+     		 <div>
+     			 <input/>
+     		 </div>
+     		 <div class="tabs">
+     		 </div>
+     	 </div>
+     	 <div class="conversations"></div>
+     	 <div class="bottom_wrapper clearfix">
+     		 <div class="message_input_wrapper">
+     			 <input class="message_input" placeholder="Type your message here..." />
+     		 </div>
+     		 <div class="send_message">
+     			 <div class="icon"></div>
+     			 <div class="text">Send</div>
+     		 </div>
+     	 </div>
+      </div>
 
+   </div>
+   <div class="col-sm-1" id="crisis-selectorCol">
+    <div id="crisis-selector">
+      <div id="ebola" draggable="true">Ebola</div>
+    </div>
+   </div>
+   <div class="col-sm-11" id="mapCol">
+    <div id="mapid"></div>
+  </div>
+</div>
 
 
 
@@ -67,7 +82,6 @@
 		<ul class="messages"></ul>
 	</div>
  </div>
-
-  <!--div id="mapid"></div-->
+ 
 </body>
 </html>
