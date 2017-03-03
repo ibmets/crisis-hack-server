@@ -55,7 +55,8 @@ $(document).ready(function() {
 	});
 	$('.message_input').keyup(function (e) {
 	    if (e.which === 13) {
-	        return chatFunctions.sendMessage(chatFunctions.getMessageText());
+            var id = $(".conversation.active").attr('id');
+	        return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
 	    }
 	});
 	/*
@@ -277,8 +278,15 @@ $(document).ready(function() {
                 return setTimeout(function () {
                     $conversation.attr('id', _this.id);
                     $conversation.attr('rel', JSON.stringify({lat: _this.lat, lon: _this.lon, phone: _this.phone, name: _this.name}));
-										$('#' + _this.id + ' .name').html(_this.name);
-										chatFunctions.selectConversation(_this.id);
+					
+                    var currentCircleNumbersLength = currentCircleNumbers.length;
+                    var convoNumber = _this.id.split("person_")[1].split("-SafariCom")[0] -1;
+
+                    if (convoNumber <= currentCircleNumbers.length) {
+                        $('#' + _this.id + ' .name').html(currentCircleNumbers[convoNumber].name);
+                    }
+                    
+					chatFunctions.selectConversation(_this.id);
                     return;
                 }, 0);
             };
@@ -324,8 +332,9 @@ $(document).ready(function() {
             $conversation = $('#' + id);
             var convoId = $conversation.attr('id');
 
-            //var currentCircleNumbersLength = currentCircleNumbers.length;
-            //var convoNumber = id.split("person_")[1].split("-SafariCom")[0];
+            var currentCircleNumbersLength = currentCircleNumbers.length;
+
+            var convoNumber = id.split("person_")[1].split("-SafariCom")[0] - 1;
 
             message = new Message({
                 text: text,
@@ -333,15 +342,12 @@ $(document).ready(function() {
                 conversation: id,
                 timestamp: Math.floor(Date.now() / 1000)
             });
-            /*
+            
             if (convoNumber <= currentCircleNumbersLength) {
+                console.log(message.targetNumber);
             	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
             }
-            */
-						console.log('sendmessage: ' + JSON.parse($conversation.attr('rel')).phone);
-            if (JSON.parse($conversation.attr('rel')).phone) {
-                message.targetNumber = JSON.parse($conversation.attr('rel')).phone;
-            }
+            
             message.draw();
             return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
         },
@@ -540,5 +546,9 @@ $(document).ready(function() {
     		}
     		cb();
     	});
+    }
+
+    function getPhoneNumbers() {
+
     }
 });
