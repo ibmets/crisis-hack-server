@@ -54,6 +54,24 @@ body {
   color: #bcbdc0;
   font-size: 20px;
 }
+.top_menu .tabs {
+  margin: -18px 0 0 140px;
+  position: absolute;
+}
+.top_menu .tabs .tab {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  margin-right: 10px;
+  position: relative;
+  background-color: #f5886e;
+}
+.top_menu .tabs .tab.active {
+  background-color: #a3d063;
+}
+.top_menu .input {
+}
+
 
 .messages {
   position: relative;
@@ -101,7 +119,7 @@ body {
 .messages .message.right .text {
   color: #45829b;
 }
-.messages .message.appeared {
+.conversation.active .messages .message {
   opacity: 1;
 }
 .messages .message .avatar {
@@ -138,6 +156,13 @@ body {
 .messages .message .text_wrapper .text {
   font-size: 18px;
   font-weight: 300;
+}
+
+.conversation {
+  display: none;
+}
+.conversation.active {
+  display: inline;
 }
 
 .bottom_wrapper {
@@ -190,6 +215,6 @@ body {
   line-height: 48px;
 }
 
-.message_template {
+.message_template, .conversation_template {
   display: none;
 }
