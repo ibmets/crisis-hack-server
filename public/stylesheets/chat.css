@@ -69,8 +69,7 @@ body {
 .top_menu .tabs .tab.active {
   background-color: #a3d063;
 }
-.top_menu .input {
-}
+
 
 
 .messages {
@@ -163,6 +162,10 @@ body {
 }
 .conversation.active {
   display: inline;
+}
+.conversation .name {
+  font-weight: bold;
+  text-align: center;
 }
 
 .bottom_wrapper {
