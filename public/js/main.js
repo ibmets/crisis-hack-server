@@ -7,6 +7,8 @@ $(document).ready(function() {
 	const DEFAULT_LOCATION = [8.4562, -13.2277];
 	const DEFAULT_ZOOM = 13;
 
+    var tabsLoaded = 0;
+
 	var mymap = L.map('mapid').setView(DEFAULT_LOCATION, DEFAULT_ZOOM);
 	var group = new L.featureGroup();
 	mymap.addLayer(group);
@@ -144,11 +146,6 @@ $(document).ready(function() {
 			    fillOpacity: 0.5,
 			    radius: radius
 			}).addTo(group);
-
-
-
-
-
 
 			mymap.fitBounds(group.getBounds());
 		});
@@ -511,7 +508,11 @@ $(document).ready(function() {
                 lon = JSON.parse($conversation.attr('rel')).lon;
             }
             if (lat && lon) {
-                mymap.panTo(new L.LatLng(lat, lon))
+                if (tabsLoaded < 4) {
+                    tabsLoaded +=1
+                } else {
+                    mymap.panTo(new L.LatLng(lat, lon))
+                }
             }
         },
         convertTimestamp: function(timestamp) {
