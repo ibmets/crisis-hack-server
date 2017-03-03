@@ -80,7 +80,6 @@ $(document).ready(function() {
 				var lng = people[i].geometry.coordinates[0];
                 var phoneIcon;
                 if (people[i].doc.properties.property_values["is real"]) {
-                    console.log(lat, lng)
                     phoneIcon = L.icon({
                         iconUrl: 'marker-icon-ourphone.png',
                         iconSize: [25,41],
@@ -181,7 +180,6 @@ $(document).ready(function() {
 		var dropZone = document.getElementById('mapid');
 		dropZone.addEventListener('dragover', handleDragOver, false);
 		dropZone.addEventListener('drop', handleGeocode, false);
-		console.log(dropZone);
 	}
 
 	function handleGeocode(evt) {
@@ -191,15 +189,12 @@ $(document).ready(function() {
         var files = evt.dataTransfer; // FileList object.
 
         var url = files.getData("text/plain");
-        console.log(url)
         if (url && url.length > 0) {
         	$.post("/corsproxy",{url: url}, function(geoJSON) {
-        		console.log(geoJSON);
         		try {
         			// var geoJSON = JSON.parse(result);
 
         			var data = geoJSON.features.slice(0,10);
-        			console.log(data);
         			delete geoJSON.features;
         			for (var i=0; i<data.length; i++) {
         				//add marker to map
@@ -244,7 +239,6 @@ $(document).ready(function() {
                 $message.addClass(_this.message_side).find('.text').html(_this.text);
                 var selector = '#' + this.conversation + ' .messages';
                 $(selector).append($message);
-								console.log('message.draw: ' + this.targetNumber);
                 if (this.targetNumber) {
                 	// send message to number
                 	//send request to server to actually send the message.
@@ -344,7 +338,6 @@ $(document).ready(function() {
             });
             
             if (convoNumber <= currentCircleNumbersLength) {
-                console.log(message.targetNumber);
             	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
             }
             
@@ -468,7 +461,6 @@ $(document).ready(function() {
                             lat: parsedResponse['latitude'],
                             lon: parsedResponse['longitude']
                         });
-												console.log('getConversation: ' + phoneNumber);
                         if (phoneNumber) {
                             conversation.phone = phoneNumber;
                         }
