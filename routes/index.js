@@ -8,6 +8,7 @@ var needle = require('needle');
 //var bodyParser = require('body-parser');
 
 var twilioFunctions = require('./twilio.js');
+var request = require('request');
 
 // HTTP GET - Return all tweets
 router.get('/', function(req, res, next) {
@@ -48,5 +49,12 @@ router.post('/receiveMessage', function(req, res, next) {
 
    // res.send();
 });
+
+router.post('/corsproxy', function(req, res, next) {
+    var url = req.body.url;
+    request(url, {json: true}, function(error, response, body) {
+        res.json(body);
+    })
+})
 
 module.exports = router;

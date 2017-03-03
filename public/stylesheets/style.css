@@ -17,10 +17,20 @@ h1 {
 
 
 #mapid { height: 720px; }
+
+#crisis-selectorCol {
+	padding-right: 0px;
+}
+#mapCol {
+	padding-left: 0px;
+}
 #crisis-selector {
 	height: 720px;;
 	background-color: #eee;
-	padding: 20px;
+	// padding: 20px;
+	margin: 0 auto;
+	width: 100%;
+
 }
 
 #chat_container {
@@ -49,4 +59,17 @@ h1 {
 .back-nav p:hover {
 	cursor: pointer;
 
+}
+
+#crisis-list {
+	list-style: none;
+	padding: 0;
+	text-align: center;
+}
+
+.crisis {
+	padding: 20px 0px 20px 0px;
+	text-align: center;
+	// height: 40px;
+	cursor: pointer;	
 }
