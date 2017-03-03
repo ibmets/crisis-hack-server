@@ -15,7 +15,10 @@
     "request": "^2.79.0",
     "socket.io": "^1.7.3",
     "uuid": "^3.0.1",
-    "vcap_services": "^0.2.0"
+    "vcap_services": "^0.2.0",
+    "twilio":"2.x",
+    "promise": "latest",
+    "needle": "latest"
   },
   "repository": {},
   "engines": {
