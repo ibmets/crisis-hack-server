@@ -48,3 +48,5 @@ jspm_packages
 
 # Environment variables for local development
 .env
+
+.DS_Store
