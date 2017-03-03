@@ -20,22 +20,27 @@ $(document).ready(function() {
 		id: 'mapbox.streets'
 	}).addTo(mymap);
 
-	var ebolaDrag = false;
-	$("#ebola").on('dragstart', function(e) {
-		// console.log('drag');
-		ebolaDrag = true;
+	displayCrisisTypes(function() {
+		var ebolaDrag = false;
+		$(".crisis").on('dragstart', function(e) {
+			console.log('drag');
+			ebolaDrag = true;
+		});
+
+		mymap.on('mouseup', function(e) {
+			console.log(ebolaDrag)
+			//if ebola crisis has been dragged
+			if (ebolaDrag) {
+				ebolaDrag = false;
+				// console.log(e.latlng); // e is an event object (MouseEvent in this case)
+				addChat(mymap);
+				addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000);
+			}
+
+		});
 	});
 
-	mymap.on('mouseup', function(e) {
-		//if ebola crisis has been dragged
-		if (ebolaDrag) {
-			ebolaDrag = false;
-			// console.log(e.latlng); // e is an event object (MouseEvent in this case)
-			addChat(mymap);
-			addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000000);
-		}
-
-	});
+	
 
 	$("#back-button").click(function(e) {
 		e.preventDefault();
@@ -56,7 +61,7 @@ $(document).ready(function() {
 			}
 	});
 	*/
-
+	
 	setupWebPageDragDrop();
 	var currentCircleNumbers = [];
 
@@ -70,7 +75,7 @@ $(document).ready(function() {
 
 				L.marker([lat,lng]).addTo(group);
 				if (people[i].doc.properties.property_values["is real"]) {
-					console.log(people[i]);
+					// console.log(people[i]);
 					currentCircleNumbers.push({
 						name: people[i].doc.properties.name,
 						telephone_number: people[i].doc.properties.property_values["telephone number"][0]
@@ -84,7 +89,7 @@ $(document).ready(function() {
 			console.log(currentCircleNumbers);
 
 			$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/queries/conversation%20including%20person/execute?style=normalised', function(response) {
-				console.log(response.results);
+				// console.log(response.results);
 				var ceresults = response.results;
 				var conversations = [];
 				var testPeople = ['person.1', 'person.2', 'person.3', 'person.4'];
@@ -106,6 +111,15 @@ $(document).ready(function() {
 			})
 
 
+			//Add marker at center of circle with ebola icon
+			var ebolaIcon = L.icon({
+			    iconUrl: 'https://raw.githubusercontent.com/ce-store/crisishack/master/src/main/webapp/icons/crisis_ebola.png',
+			    iconAnchor: new L.Point(16, 18),
+			    iconSize: new L.Point(32, 37),
+			});
+
+			var center = L.marker([latitude, longitude], {icon: ebolaIcon});
+			center.addTo(group);
 
 			var circle = L.circle([latitude, longitude], {
 			    color: 'red',
@@ -113,12 +127,18 @@ $(document).ready(function() {
 			    fillOpacity: 0.5,
 			    radius: radius
 			}).addTo(group);
+
+			
+			
+			
+			
+
 			mymap.fitBounds(group.getBounds());
 		});
 	}
 
 	function addChat(map) {
-		$("#mapCol").removeClass("col-sm-11");
+		$("#mapCol").removeClass("col-sm-10");
 		$("#mapCol").addClass("col-sm-8");
 		$("#crisis-selectorCol").hide();
 		$("#chat_container").animate({width:'toggle'},350, function() {
@@ -131,7 +151,7 @@ $(document).ready(function() {
 		$("#chat_container").animate({width:'toggle'},350, function() {
 			$(".back-nav").animate({height: "toggle"},350, function() {
 				$("#mapCol").removeClass("col-sm-8");
-				$("#mapCol").addClass("col-sm-11");
+				$("#mapCol").addClass("col-sm-10");
 				$("#crisis-selectorCol").show();
 				group.clearLayers();
 				window.dispatchEvent(new Event('resize'));
@@ -158,12 +178,14 @@ $(document).ready(function() {
         var url = files.getData("text/plain");
         if (url && url.length > 0) {
         	$.get(url, function(result) {
+        		// console.log(result);
         		try {
         			var geoJSON = JSON.parse(result);
-        			for (var i=0; i<geoJSON.length; i++) {
+        			console.log(geoJSON);
+        			for (var i=0; i<geoJSON.features.length; i++) {
         				//add marker to map
-        				var lat = geoJSON[i].geometry.coordinates[1];
-        				var lng = geoJSON[i].geometry.coordinates[0];
+        				var lat = geoJSON.features[i].geometry.coordinates[1];
+        				var lng = geoJSON.features[i].geometry.coordinates[0];
         				L.marker([lat,lng]).addTo(group);
         			}
 
@@ -439,5 +461,18 @@ $(document).ready(function() {
             return newDate.toUTCString();
         },
 
+    }
+
+    function displayCrisisTypes(cb) {
+    	//make a call to CE store and get crisis types
+    	$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/concepts/crisis%20type/instances?style=normalised', function(result) {
+    		for (var i=0; i<result.length; i++) {
+    			var name = result[i]._id;
+    			var htmlString = "<li><div class='crisis' draggable='true'><p>"+name+"</p><img src='"+result[i]["icon file name"]+"'</div></li>";
+
+    			$("#crisis-list").append(htmlString);
+    		}
+    		cb();
+    	});
     }
 });
