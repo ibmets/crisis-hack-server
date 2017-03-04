@@ -53,12 +53,40 @@ $(document).ready(function() {
 
     $('.send_message').click(function (e) {
         var id = $(".conversation.active").attr('id');
-        return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
+        var phone = JSON.parse($(".conversation.active").attr('rel')).phone;
+        var timestamp = + new Date();
+        var text = chatFunctions.getMessageText();
+        var url = "http://ce-crisishack.eu-gb.mybluemix.net/ce-store/sentences";
+        var sentence = "there is an sms message named 'sms_{uid}' that is from the number '" + phone + "' and is to the number ' 441403540126' and has '" + timestamp + "' as timestamp and has '" + text + "' as message text.";
+        var req = new XMLHttpRequest();
+
+        url += '?ceText=';
+        url += escape(sentence);
+        url += '&action=save'
+
+        // TODO: Make this post to ce store
+        req.open('POST', url, true);
+        req.send();
+        return chatFunctions.sendMessage(text, id, phone);
     });
     $('.message_input').keyup(function (e) {
         if (e.which === 13) {
             var id = $(".conversation.active").attr('id');
-            return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
+            var phone = JSON.parse($(".conversation.active").attr('rel')).phone;
+            var timestamp = + new Date();
+            var text = chatFunctions.getMessageText();
+            var url = "http://ce-crisishack.eu-gb.mybluemix.net/ce-store/sentences";
+            var sentence = "there is an sms message named 'sms_{uid}' that is from the number '" + phone + "' and is to the number ' 441403540126' and has '" + timestamp + "' as timestamp and has '" + text + "' as message text.";
+            var req = new XMLHttpRequest();
+
+            url += '?ceText=';
+            url += escape(sentence);
+            url += '&action=save'
+
+            // TODO: Make this post to ce store
+            req.open('POST', url, true);
+            req.send();
+            return chatFunctions.sendMessage(text, id, phone);
         }
     });
 
@@ -67,7 +95,7 @@ $(document).ready(function() {
     setTimeout(function () {
         $sendToAll.addClass('send-to-all');
         $sendToAll[0].addEventListener('click', function() {
-        chatFunctions.selectConversation('send-to-all');
+            chatFunctions.selectConversation('send-to-all');
         });
     }, 0);
     $('.send-to-all').keyup(function (e) {
@@ -128,18 +156,19 @@ $(document).ready(function() {
 				var testPeople = ['Perry', 'Dave', 'Adrian', 'Dan', 'Richard', 'Rosie', 'Sanaz'];
 				for (x in ceresults) {
 					var ceresult = ceresults[x];
-                    //console.log(ceresult);
-					for (y in testPeople) {
-						var person = testPeople[y];
-						if (ceresult[0] === person) {
-                            var inst = response.instances[person];
+                    for (y in testPeople) {
+                        var person = testPeople[y];
+                        if (ceresult[0] === person) {
+                            var inst = response.instances[ceresult[0]];
                             var phone = inst['telephone number'];
                             var lat = inst['latitude'];
                             var lon = inst['longitude'];
-							conversations.push({'id': ceresult[1], 'phone': phone, 'lat': lat, 'lon': lon});
-						}
-					}
+        					conversations.push({'id': ceresult[1], 'phone': phone, 'lat': lat, 'lon': lon});
+                        }
+                    }
+
 				}
+                console.log(conversations.length);
 				for (c in conversations) {
 					var conv = conversations[c];
 					chatFunctions.getConversationFromCE(conv.id.replace('.', '_'), conv.phone, conv.lat, conv.lon);
@@ -337,21 +366,6 @@ $(document).ready(function() {
             message_side = 'right';
             $conversation = $('#' + id);
             var convoId = $conversation.attr('id');
-            /*
-            var currentCircleNumbersLength = currentCircleNumbers.length;
-            var convoNumber;
-            var realPersonNumber;
-            if (_this) {
-                var convoNumber = _this.id.split("person_")[1];
-                if (convoNumber){
-                    convoNumber.split("-SafariCom")[0] - 1;
-                }
-            }
-            else {
-
-            }
-            */
-
 
             message = new Message({
                 text: text,
@@ -360,14 +374,6 @@ $(document).ready(function() {
                 timestamp: Math.floor(Date.now() / 1000),
                 targetNumber: phone
             });
-
-            if (convoNumber <= currentCircleNumbersLength) {
-            	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
-            }
-
-            if (id === 'Perry-SafariCom') {
-                message.targetNumber = '07956749536';
-            }
 
             message.draw();
             return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
@@ -497,17 +503,28 @@ $(document).ready(function() {
                             phone: phone
                         });
 
-                        tab = new Tab({conversation: id});
-                        tab.draw();
-                        conversation.draw();
-						chatFunctions.selectConversation(conversation.id);
-                        var messages = conversation.messages;
-                        var expectedNumber = messages.length;
-                        var messageObjects = [];
-                        for (m in messages) {
-                            var messageName = messages[m];
-                            chatFunctions.getMessageFromCE(messageName, conversation['id'], expectedNumber, messageObjects);
+                        var inCircle = false;
+                        for (var i=0; i<currentCircleNumbers.length; i++) {
+                            if (currentCircleNumbers[i].name === name) {
+                                inCircle = true;
+                                break;
+                            }
                         }
+                        if (inCircle) {
+                            tab = new Tab({conversation: id});
+                            tab.draw();
+
+                            conversation.draw();
+    						chatFunctions.selectConversation(conversation.id);
+                            var messages = conversation.messages;
+                            var expectedNumber = messages.length;
+                            var messageObjects = [];
+                            for (m in messages) {
+                                var messageName = messages[m];
+                                chatFunctions.getMessageFromCE(messageName, conversation['id'], expectedNumber, messageObjects);
+                            }
+                        }
+
                     }
                     else {
                         console.log('There is no conversation with that id!');
@@ -593,9 +610,11 @@ $(document).ready(function() {
             return newDate.toUTCString();
         },
         sendToAll: function(text) {
-            for (i = 1; i < 5; i++) {
-                var id = 'person_' + i + '-SafariCom';
-                chatFunctions.sendMessage(text, id);
+            for (i = 1; i < $('.conversation').length - 1; i++) {
+                var $conv = $($('.conversation')[i]);
+                var id = $conv.attr('id');
+                var phone = JSON.parse($conv.attr('rel')).phone;
+                //chatFunctions.sendMessage(text, id, phone);
             }
         },
         getIdOfActiveConvo: function() {
@@ -622,15 +641,44 @@ $(document).ready(function() {
     	});
     }
 
+
+    setTimeout(function () {
+        //chatFunctions.sendToAll('Is anyone you know unwell?');
+        var newProm = new Promise(function(resolve, reject) {
+          var req = new XMLHttpRequest();
+          req.open('GET', 'http://ce-crisishack.eu-gb.mybluemix.net/ce-store/concepts/detected%20thing/children?style=summary');
+          req.onload = function() {
+            if (req.status == 200) {
+              resolve(req.response);
+            }
+            else {
+              reject(Error(req.statusText));
+            }
+          };
+          req.onerror = function() {
+            reject(Error("Network Error"));
+          };
+          req.send();
+        });
+
+        newProm.then(function(response) {
+            var parsedResponse = JSON.parse(response);
+            for (p in parsedResponse) {
+                var concept = parsedResponse[p];
+                var $concept = $($('.concept_template').clone().html());
+                $('#concepts').append($concept);
+                $concept.text(concept['_id']);
+            }
+        });
+
+    }, 1000);
+
     window.setInterval(function(){
         var activeConvoId = chatFunctions.getIdOfActiveConvo();
         if (activeConvoId && activeConvoId !== 'send-to-all') {
             chatFunctions.getConversationFromCE(activeConvoId);
         }
         return;
-    }, 1000);
+    }, 1000)
 
-    function getPhoneNumbers() {
-
-    }
 });

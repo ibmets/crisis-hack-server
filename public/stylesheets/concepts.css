@@ -1,0 +1,18 @@
+.concept_template {
+  display: none;
+}
+
+.concepts {
+  margin-bottom: 20px;
+}
+
+.concept {
+  width: 120px;
+  height: 40px;
+  display: inline-block;
+  margin: 10px;
+  position: relative;
+  background-color: #a3d063;
+  border-radius: 10px;
+  text-align: center;
+}
