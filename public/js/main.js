@@ -65,7 +65,6 @@ $(document).ready(function() {
     var $sendToAll = $($('.tab_template').clone().html());
     $('.tabs').append($sendToAll);
     setTimeout(function () {
-        console.log($sendToAll);
         $sendToAll.addClass('send-to-all');
         $sendToAll[0].addEventListener('click', function() {
         chatFunctions.selectConversation('send-to-all');
@@ -120,28 +119,30 @@ $(document).ready(function() {
 					})
 				}
 
-
 			}
 
-			$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/queries/conversation%20including%20person/execute?style=normalised', function(response) {
+			$.get('http://ce-crisishack.eu-gb.mybluemix.net/ce-store/queries/conversation%20including%20person/execute?returnInstances=true&style=normalised', function(response) {
 
 				var ceresults = response.results;
 				var conversations = [];
-				var testPeople = ['person.1', 'person.2', 'person.3', 'person.4'];
+				var testPeople = ['Perry', 'Dave', 'Adrian', 'Dan', 'Richard', 'Rosie', 'Sanaz'];
 				for (x in ceresults) {
 					var ceresult = ceresults[x];
-
+                    //console.log(ceresult);
 					for (y in testPeople) {
-						var currentCircleNumber = testPeople[y];
-						if (ceresult[0] === currentCircleNumber) {
-							conversations.push({id: ceresult[1], number: '0123456789'});
+						var person = testPeople[y];
+						if (ceresult[0] === person) {
+                            var inst = response.instances[person];
+                            var phone = inst['telephone number'];
+                            var lat = inst['latitude'];
+                            var lon = inst['longitude'];
+							conversations.push({'id': ceresult[1], 'phone': phone, 'lat': lat, 'lon': lon});
 						}
 					}
 				}
-
 				for (c in conversations) {
 					var conv = conversations[c];
-					chatFunctions.getConversationFromCE(conv.id.replace('.', '_'));
+					chatFunctions.getConversationFromCE(conv.id.replace('.', '_'), conv.phone, conv.lat, conv.lon);
 				}
 			})
 
@@ -289,13 +290,7 @@ $(document).ready(function() {
                 return setTimeout(function () {
                     $conversation.attr('id', _this.id);
                     $conversation.attr('rel', JSON.stringify({lat: _this.lat, lon: _this.lon, phone: _this.phone, name: _this.name}));
-
-                    var currentCircleNumbersLength = currentCircleNumbers.length;
-                    var convoNumber = _this.id.split("person_")[1].split("-SafariCom")[0] -1;
-
-                    if (convoNumber <= currentCircleNumbers.length) {
-                        $('#' + _this.id + ' .name').html(currentCircleNumbers[convoNumber].name);
-                    }
+                    $('#' + _this.id + ' .name').html(_this.name);
 
 					chatFunctions.selectConversation(_this.id);
                     return;
@@ -332,7 +327,7 @@ $(document).ready(function() {
             $message_input = $('.message_input');
             return $message_input.val();
         },
-        sendMessage: function (text, id) {
+        sendMessage: function (text, id, phone) {
             var $messages, message;
             if (text.trim() === '') {
                 return;
@@ -342,20 +337,36 @@ $(document).ready(function() {
             message_side = 'right';
             $conversation = $('#' + id);
             var convoId = $conversation.attr('id');
-
+            /*
             var currentCircleNumbersLength = currentCircleNumbers.length;
+            var convoNumber;
+            var realPersonNumber;
+            if (_this) {
+                var convoNumber = _this.id.split("person_")[1];
+                if (convoNumber){
+                    convoNumber.split("-SafariCom")[0] - 1;
+                }
+            }
+            else {
 
-            var convoNumber = id.split("person_")[1].split("-SafariCom")[0] - 1;
+            }
+            */
+
 
             message = new Message({
                 text: text,
                 message_side: message_side,
                 conversation: id,
-                timestamp: Math.floor(Date.now() / 1000)
+                timestamp: Math.floor(Date.now() / 1000),
+                targetNumber: phone
             });
 
             if (convoNumber <= currentCircleNumbersLength) {
             	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
+            }
+
+            if (id === 'Perry-SafariCom') {
+                message.targetNumber = '07956749536';
             }
 
             message.draw();
@@ -402,10 +413,12 @@ $(document).ready(function() {
                     conversation: conversation,
                     timestamp: parsedResponse['timestamp']
                 });
-								var phone = JSON.parse($('#' + conversation).attr('rel')).phone;
-								if (phone) {
-									message.phone = phone;
-								}
+				var phone = parsedResponse['telephone number'];
+                //console.log(parsedResponse);
+				if (phone) {
+					message.phone = phone;
+                    //console.log(phone);
+				}
                 messageObjects.push(message);
                 if (messageObjects.length === expected) {
                     messageObjects.sort(function(x, y){
@@ -413,32 +426,34 @@ $(document).ready(function() {
                     })
                     for (m in messageObjects) {
                         messageObjects[m].draw();
-                        $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
+                        $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 540);
                     }
                 }
             });
             return;
         },
-        getConversationFromCE: function(id) {
+        getConversationFromCE: function(id, phone, lat, lon) {
             var $conversations, conversation;
             var $existingConversation = $('#' + id.toString().replace('.', '_'));
+
+            var p = new Promise(function(resolve, reject) {
+              var req = new XMLHttpRequest();
+              req.open('GET', 'http://ce-crisishack.eu-gb.mybluemix.net/ce-store/concepts/conversation/instances?style=normalised');
+              req.onload = function() {
+                if (req.status == 200) {
+                  resolve(req.response);
+                }
+                else {
+                  reject(Error(req.statusText));
+                }
+              };
+              req.onerror = function() {
+                reject(Error("Network Error"));
+              };
+              req.send();
+            });
+
             if ($existingConversation.length === 0) {
-                var p = new Promise(function(resolve, reject) {
-                  var req = new XMLHttpRequest();
-                  req.open('GET', 'http://ce-crisishack.eu-gb.mybluemix.net/ce-store/concepts/conversation/instances?style=normalised');
-                  req.onload = function() {
-                    if (req.status == 200) {
-                      resolve(req.response);
-                    }
-                    else {
-                      reject(Error(req.statusText));
-                    }
-                  };
-                  req.onerror = function() {
-                    reject(Error("Network Error"));
-                  };
-                  req.send();
-                });
 
                 p.then(function(response) {
                     var parsedResponse;
@@ -457,7 +472,8 @@ $(document).ready(function() {
                         $conversations = $('.conversations');
                         var messages = [];
                         var name;
-                        var phoneNumber = null;
+                        var phoneNumber;
+                        //console.log(parsedResponse);
                         if (typeof parsedResponse['message'] === 'string') {
                             messages.push(parsedResponse['message']);
                         }
@@ -471,20 +487,20 @@ $(document).ready(function() {
 
                             }
                         }
+
                         conversation = new Conversation({
                             messages: messages,
                             id: id,
-														name: name,
+							name: name,
                             lat: parsedResponse['latitude'],
-                            lon: parsedResponse['longitude']
+                            lon: parsedResponse['longitude'],
+                            phone: phone
                         });
-                        if (phoneNumber) {
-                            conversation.phone = phoneNumber;
-                        }
+
                         tab = new Tab({conversation: id});
                         tab.draw();
                         conversation.draw();
-												chatFunctions.selectConversation(conversation.id);
+						chatFunctions.selectConversation(conversation.id);
                         var messages = conversation.messages;
                         var expectedNumber = messages.length;
                         var messageObjects = [];
@@ -500,7 +516,48 @@ $(document).ready(function() {
                 });
             }
             else {
-                chatFunctions.selectConversation(id);
+                var displayedMessageCount = $existingConversation[0].children[1].children.length;
+                p.then(function(response) {
+                    var parsedResponse;
+                    var foundId = false;
+                    var index = 0;
+                    while (!foundId && index < JSON.parse(response).length) {
+                        if (JSON.parse(response)[index]['_id'].replace('.', '_') === id) {
+                            foundId = true;
+                            parsedResponse = JSON.parse(response)[index];
+                        }
+                        else {
+                            index += 1;
+                        }
+                    }
+
+                    var messages = [];
+                    if (typeof parsedResponse['message'] === 'string') {
+                        messages.push(parsedResponse['message']);
+                    }
+                    else {
+                        messages = parsedResponse['message'];
+                    }
+
+                    var diff = messages.length - displayedMessageCount;
+
+                    if (diff > 0) {
+                        var messageObjects = [];
+
+                        for (m in messages) {
+                            if (m >= displayedMessageCount) {
+                                var message = messages[m];
+                                chatFunctions.getMessageFromCE(message, id, diff, messageObjects);
+                            }
+                        }
+                    }
+                    else if (diff < 0) {
+                        console.log('Message from UI has not been sent to ce store!')
+                    }
+                    else {
+                        console.log('Nothing to report!');
+                    }
+                });
             }
             return;
         },
@@ -540,6 +597,14 @@ $(document).ready(function() {
                 var id = 'person_' + i + '-SafariCom';
                 chatFunctions.sendMessage(text, id);
             }
+        },
+        getIdOfActiveConvo: function() {
+            var $activeConvo = $('.conversation.active');
+            var output = null;
+            if ($activeConvo) {
+                output = $activeConvo.attr('id');
+            }
+            return output;
         }
 
     }
@@ -558,7 +623,11 @@ $(document).ready(function() {
     }
 
     window.setInterval(function(){
-
+        var activeConvoId = chatFunctions.getIdOfActiveConvo();
+        if (activeConvoId && activeConvoId !== 'send-to-all') {
+            chatFunctions.getConversationFromCE(activeConvoId);
+        }
+        return;
     }, 1000);
 
     function getPhoneNumbers() {

@@ -16,13 +16,13 @@ h1 {
 }
 
 
-#mapid { height: 720px; }
+#mapid { height: 500px; }
 
 #crisis-selectorCol {
 	padding-right: 0px;
 }
 #mapCol {
-	padding-left: 0px;
+	padding-left: 15px;
 }
 #crisis-selector {
 	height: 720px;;
@@ -71,5 +71,9 @@ h1 {
 	padding: 20px 0px 20px 0px;
 	text-align: center;
 	// height: 40px;
-	cursor: pointer;	
+	cursor: pointer;
+}
+
+#concepts {
+	height: 200px;
 }
