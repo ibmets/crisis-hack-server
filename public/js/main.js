@@ -48,17 +48,7 @@ $(document).ready(function() {
 		e.preventDefault();
 		hideChat(mymap, group);
 	})
-	// $('.send_message').click(function (e) {
-	// 		var msg = chatFunctions.getMessageText();
-	// 		console.log(msg);
-	//     return chatFunctions.sendToAll(msg);
-	// });
-	// $('.message_input').keyup(function (e) {
-	//     if (e.which === 13) {
- //            var id = $(".conversation.active").attr('id');
-	//         return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
-	//     }
-	// });
+
     var currentCircleNumbers = [];
 
     $('.send_message').click(function (e) {
@@ -71,28 +61,36 @@ $(document).ready(function() {
             return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
         }
     });
-    var $sendToAll = $('.tabs').append($($('.tab_template').clone().html()));
+
+    var $sendToAll = $($('.tab_template').clone().html());
+    $('.tabs').append($sendToAll);
     setTimeout(function () {
-            $sendToAll.addClass('send-to-all');
-            $sendToAll[0].addEventListener('click', function() {
-                    chatFunctions.turnOffActiveConvo();
-            });
-            
+        console.log($sendToAll);
+        $sendToAll.addClass('send-to-all');
+        $sendToAll[0].addEventListener('click', function() {
+        chatFunctions.selectConversation('send-to-all');
+        });
     }, 0);
     $('.send-to-all').keyup(function (e) {
         if (e.which === 13) {
             return chatFunctions.sendToAll(chatFunctions.getMessageText());
         }
     });
-	
+
+    var $sentToAllConv = $($('.conversation_template').clone().html());
+    $('.conversations').append($sentToAllConv);
+    setTimeout(function () {
+        $sentToAllConv.attr('id', 'send-to-all');
+        $('#send-to-all .name').html('Send a message to all active chats');
+    });
 
 	setupWebPageDragDrop();
-	
+
 
 	function addPeopleToMap(latitude, longitude, radius) {
 		group.clearLayers();
 		$.get('/geo/peopleNearLocation/'+latitude+'/'+longitude+'/'+radius, function(people) {
-			
+
             for (var i=0; i<people.length; i++) {
 				//add marker to map
 				var lat = people[i].geometry.coordinates[1];
@@ -111,8 +109,8 @@ $(document).ready(function() {
                         iconAnchor: [12.5, 41]
                     })
                 }
-                
-                
+
+
 
 				L.marker([lat,lng], {icon: phoneIcon}).addTo(group);
 				if (people[i].doc.properties.property_values["is real"]) {
@@ -291,14 +289,14 @@ $(document).ready(function() {
                 return setTimeout(function () {
                     $conversation.attr('id', _this.id);
                     $conversation.attr('rel', JSON.stringify({lat: _this.lat, lon: _this.lon, phone: _this.phone, name: _this.name}));
-					
+
                     var currentCircleNumbersLength = currentCircleNumbers.length;
                     var convoNumber = _this.id.split("person_")[1].split("-SafariCom")[0] -1;
 
                     if (convoNumber <= currentCircleNumbers.length) {
                         $('#' + _this.id + ' .name').html(currentCircleNumbers[convoNumber].name);
                     }
-                    
+
 					chatFunctions.selectConversation(_this.id);
                     return;
                 }, 0);
@@ -317,7 +315,7 @@ $(document).ready(function() {
                 return setTimeout(function () {
                     $tab.addClass(_this.conversation);
                     $tab[0].addEventListener('click', function() {
-                        chatFunctions.selectConversation(_this.conversation);
+                    chatFunctions.selectConversation(_this.conversation);
                     });
                     return;
                 }, 0);
@@ -355,11 +353,11 @@ $(document).ready(function() {
                 conversation: id,
                 timestamp: Math.floor(Date.now() / 1000)
             });
-            
+
             if (convoNumber <= currentCircleNumbersLength) {
             	message.targetNumber = currentCircleNumbers[convoNumber].telephone_number;
             }
-            
+
             message.draw();
             return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
         },
@@ -470,7 +468,7 @@ $(document).ready(function() {
                         for (i in parsedResponse.includes) {
                             if (parsedResponse.includes[i] !== 'SafariCom') {
                                 name = parsedResponse.includes[i];
-																
+
                             }
                         }
                         conversation = new Conversation({
@@ -558,6 +556,10 @@ $(document).ready(function() {
     		cb();
     	});
     }
+
+    window.setInterval(function(){
+
+    }, 1000);
 
     function getPhoneNumbers() {
 
