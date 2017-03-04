@@ -36,7 +36,7 @@ $(document).ready(function() {
 				ebolaDrag = false;
 				// console.log(e.latlng); // e is an event object (MouseEvent in this case)
 				addChat(mymap);
-				addPeopleToMap(e.latlng.lat, e.latlng.lng, 1000000);
+				addPeopleToMap(e.latlng.lat, e.latlng.lng, 2000);
 			}
 
 		});
