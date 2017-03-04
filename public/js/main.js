@@ -48,17 +48,7 @@ $(document).ready(function() {
 		e.preventDefault();
 		hideChat(mymap, group);
 	})
-	// $('.send_message').click(function (e) {
-	// 		var msg = chatFunctions.getMessageText();
-	// 		console.log(msg);
-	//     return chatFunctions.sendToAll(msg);
-	// });
-	// $('.message_input').keyup(function (e) {
-	//     if (e.which === 13) {
- //            var id = $(".conversation.active").attr('id');
-	//         return chatFunctions.sendMessage(chatFunctions.getMessageText(), id);
-	//     }
-	// });
+
     var currentCircleNumbers = [];
 
     $('.send_message').click(function (e) {
@@ -78,7 +68,7 @@ $(document).ready(function() {
         console.log($sendToAll);
         $sendToAll.addClass('send-to-all');
         $sendToAll[0].addEventListener('click', function() {
-        chatFunctions.turnOffActiveConvo();
+        chatFunctions.selectConversation('send-to-all');
         });
     }, 0);
     $('.send-to-all').keyup(function (e) {
@@ -87,6 +77,12 @@ $(document).ready(function() {
         }
     });
 
+    var $sentToAllConv = $($('.conversation_template').clone().html());
+    $('.conversations').append($sentToAllConv);
+    setTimeout(function () {
+        $sentToAllConv.attr('id', 'send-to-all');
+        $('#send-to-all .name').html('Send a message to all active chats');
+    });
 
 	setupWebPageDragDrop();
 
@@ -560,6 +556,10 @@ $(document).ready(function() {
     		cb();
     	});
     }
+
+    window.setInterval(function(){
+
+    }, 1000);
 
     function getPhoneNumbers() {
 
