@@ -376,7 +376,7 @@ $(document).ready(function() {
             });
 
             message.draw();
-            return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
+            return $messages.animate({ scrollTop: '0px' }, 300);
         },
         getMessageFromCE: function(name, conversation, expected, messageObjects) {
             var $messages;
@@ -432,7 +432,7 @@ $(document).ready(function() {
                     })
                     for (m in messageObjects) {
                         messageObjects[m].draw();
-                        $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 540);
+                        $messages.animate({ scrollTop: '0px' }, 540);
                     }
                 }
             });
